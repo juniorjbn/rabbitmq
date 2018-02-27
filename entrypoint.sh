@@ -5,6 +5,17 @@ set -xe
 N=${HOSTNAME##*-}
 FQDN=${HOSTNAME}.${SERVICE_NAME}.${NAMESPACE}.svc.cluster.local
 
+cat <<EOF > /etc/rabbitmq/rabbitmq.conf
+vm_memory_high_watermark.absolute = MEMORY_LIMIT
+listeners.tcp.default = 5672
+management.listener.port = 15672
+management.listener.ssl = false
+hipe_compile = true
+loopback_users = none
+EOF
+
+sed -i "s/MEMORY_LIMIT/$MEMORY_LIMIT/" /etc/rabbitmq/rabbitmq.conf
+
 # ensure we resolve service domain first
 sed "s/search \(.*\)/search ${SERVICE_NAME}.${NAMESPACE}.svc.cluster.local \1/g" < /etc/resolv.conf > /tmp/resolv.conf
 cat /tmp/resolv.conf > /etc/resolv.conf
